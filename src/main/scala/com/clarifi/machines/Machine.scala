@@ -52,6 +52,7 @@ object Machine {
   def step[M[+_]:Monad, K, O, A](m: Machine[K, O],
                                  feed: K => M[Option[Any]],
                                  z: O => M[A]): (M[A], Machine[K, O]) \/ M[Machine[K, O]] = m match {
+    case Return(a) => a /* _|_ this is not possible, as a is of type Nothing */
     case Stop => right(Stop.pure[M])
     case Emit(o, next) => left(z(o) -> next())
     case Await(k, s, f) => right(feed(s).map(_.map(k).getOrElse(f())))

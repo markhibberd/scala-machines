@@ -39,6 +39,8 @@ trait Driver[M[+_], K] { self =>
    */
   def driveLeft[A, B, C](m: Machine[K, A])(g: A => M[B])(initial: C)(f: (C, B) => C): M[C] = {
     def go(m: Machine[K, A], z: C): M[C] = m match {
+      case Return(a) =>
+        a /* _|_ this is not possible, as a is of type Nothing */
       case Stop =>
         z.pure[M]
       case Emit(a, k) =>
@@ -71,6 +73,7 @@ object Driver {
     @annotation.tailrec
     def go(acc: B, m: Machine[K,A]): B = {
       m match {
+        case Return(a) => a /* _|_ this is not possible, as a is of type Nothing */
         case Stop => acc
         case Emit(h, t) =>
           val r = g(h) // we are left folding, so Monoid should be strict, otherwise stack overflow / memory leak
@@ -92,4 +95,3 @@ object Driver {
     override def *[L](d: Driver[Id, L]): Driver[Id, K \/ L] = Id(_ fold (self.apply, d.apply))
   }
 }
-

@@ -41,6 +41,7 @@ object Process {
     @annotation.tailrec
     def go(acc: IndexedSeq[B], s: Process[A,B], in: LinearSeq[A]): IndexedSeq[B] =
       s match {
+        case Return(a) => a /* _|_ this is not possible, as a is of type Nothing */
         case Stop => acc
         case Emit(h,t) => go(acc :+ h, t(), in)
         case Await(k, f, fb) =>

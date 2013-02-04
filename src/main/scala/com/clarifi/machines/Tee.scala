@@ -96,10 +96,12 @@ object Tee {
     ma: Machine[A, AA],
     mb: Machine[B, BB]
   )(t: Tee[AA, BB, C]): Machine[A \/ B, C] = t match {
+      case Return(a) => a /* _|_ this is not possible, as a is of type Nothing */
       case Stop => Stop
       case Emit(o, k) => Emit(o, () => tee(ma, mb)(k()))
       case Await(k, s, f) => s.fold(
         kl => ma match {
+          case Return(a) => a /* _|_ this is not possible, as a is of type Nothing */
           case Stop => tee(ma, mb)(f())
           case Emit(a, next) => tee(next(), mb)(k(kl(a)))
           case Await(g, kg, fg) =>
@@ -108,6 +110,7 @@ object Tee {
                   () => tee(fg(), mb)(t))
         },
         kr => mb match {
+          case Return(a) => a /* _|_ this is not possible, as a is of type Nothing */
           case Stop => tee(ma, mb)(f())
           case Emit(b, next) => tee(ma, next())(k(kr(b)))
           case Await(g, kg, fg) =>

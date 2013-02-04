@@ -99,6 +99,7 @@ sealed trait Plan[+K, +O, +A] {
   final def andThen[P](p: Process[O, P]): Plan[K, P, A] = {
     @annotation.tailrec
     def rec(pl: Plan[K, O, A], p: Process[O, P]): Plan[K, P, A] = p match {
+      case Return(a)      => a /* _|_ this is not possible, as a is of type Nothing */
       case Emit(o, next)  => Emit(o, () => pl andThen next())
       case Stop           => Stop
       case Await(k, s, f) => pl match {
